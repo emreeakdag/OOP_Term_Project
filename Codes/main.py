@@ -62,61 +62,49 @@ class Hatchback(Taxi):
 
 
 from tkinter import *
-import tkinter as tk
 
-
-window = tk.Tk()
+window = Tk()
 window.title("Taxi Booking")
 window.geometry("500x500")
 
-frame1 = tk.Frame(window)
-frame2 = tk.Frame(window)
-
-
-
-#frame1 = tk.Frame(window, borderwidth=2, relief="groove")
-#frame1.grid(row=0, column=0, padx=10, pady=10)
-
-
-
-
 def login_panel():
-    login_label = tk.Label(frame1, text="This is Login Panel")
-    tk.Label(window, text="User Name:").place(x= 7, y=50)
-    username_entry = tk.Entry(window)
-    username_entry.place(x= 80, y=50)
-    username_entry.pack_forget()
+    hide_All()
+    login_frame.pack()
+    back_login_btn.pack_forget()
+    register_name.pack_forget()
 
-    tk.Label(window, text="Pasword:").place(x=22, y=80)
-    pasword_entry = tk.Entry(window)
-    pasword_entry.place(x=80, y=80) 
+def hide_All():
+    login_frame.pack_forget()
 
-    frame1.pack()
-    frame2.pack_forget()
+def show_Register_Panel():
+    hide_All()
+    register_frame.pack()
+    back_login_btn.pack()
+    register_name.pack()
 
+# Frame Tanımlamaları
+login_frame = Frame(window)
+register_frame = Frame(window)
 
-def register_panel():
+# Widget Tanımlamaları
+label = Label(login_frame, text="Kullanıcı Adı:")
+entry = Entry(login_frame)
+login_button = Button(login_frame, text="Giriş Yap")
+login_button.place(x=100,y=100)
+register_btn = Button(login_frame, text="Kayit Ol" , command=show_Register_Panel)
+register_name = Label(register_frame, text="Siüü")
+back_login_btn = Button(register_frame,text="Back Login", command=login_panel)
 
+# Frame Göster
+login_frame.pack()
+register_frame.pack()
 
-    tk.Label(window, text="word:").place(x=22, y=80)
-    pasword_entry = tk.Entry(window)
-    pasword_entry.place(x=80, y=80)
-
-
-    frame2.pack()
-    frame1.pack_forget()
-
-register_panel_button = tk.Button(frame2, text="Register")
-
-login_panel_button = tk.Button(frame1, text="Login", command=lambda: register_panel)
-login_panel_button.pack()
-
-back_login_button = tk.Button(frame2, text="Back Login", command=lambda: login_panel)
-
-
+# Widget Göster
+label.pack()
+entry.pack()
+login_button.pack()
+register_btn.pack()
 
 login_panel()
-register_panel()
 
 window.mainloop()
-
