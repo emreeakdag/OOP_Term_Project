@@ -35,7 +35,7 @@ class Taxi:
 
 class Sedan(Taxi):
     def __init__(self, brand, model, plate, capacity):
-        super().__init__(brand, model, plate, capacity= 4)
+        super().__init__(brand, model, plate, capacity)
 
     def acceleration_time(self):
         return "0-100 km/h: 8 seconds"
@@ -43,7 +43,7 @@ class Sedan(Taxi):
 
 class SUV(Taxi):
     def __init__(self, brand,model, plate, capacity):
-        super().__init__(self, brand, model, plate, capacity= 6)
+        super().__init__(brand, model, plate, capacity)
 
     def acceleration_time(self):
         return "0-100 km/h: 9 seconds"
@@ -51,10 +51,59 @@ class SUV(Taxi):
 
 class Hatchback(Taxi):
     def __init__(self, brand, model, plate, capacity):
-        super().__init__(self, brand, model, plate, capacity= 5)
+        super().__init__(brand, model, plate, capacity)
     
     def acceleration_time(self):
         return "0-100 km/h: 7 seconds"
+    
+# Vehicles
+
+vehicles =  {
+    "Sedan": [
+        Sedan("Toyota", "Camry", "01EM396", 5),
+        Sedan("Honda", "Accord", "34ABC123", 5)
+    ],
+    "SUV": [
+        SUV("Nissan", "X-Trail", "06DEF789", 7),
+        SUV("Ford", "Explorer", "07GHI012", 7)
+    ],
+    "Hatchback": [
+        Hatchback("Volkswagen", "Golf", "01EA01", 5),
+        Hatchback("Ford", "Fiesta", "34DEF34", 5)
+    ]
+}
+
+# bu araçları ekrana gösterecek def i yazalım
+
+def show_vehicle_details(vehicle):
+    details = (
+        f"Brand : {vehicle.brand}\n"
+        f"Model : {vehicle.model}\n"
+        f"Plate : {vehicle.plate}\n"
+        f"Capacity : {vehicle.capacity}\n"
+        f"{vehicle.acceleration_time()}"
+    )
+    txc_details_label.config(text=details)
+
+
+# İkinci combobox'u güncelleyen fonksiyon
+def update_model_combobox(event):
+    selected_type = txc_type_combobox.get()
+    txc_model_combobox['values'] = [f"{v.brand} {v.model}" for v in vehicles[selected_type]]
+    txc_model_combobox.set("")  # İkinci combobox'u temizle
+
+# Seçilen aracı bul ve göster
+def on_model_select(event):
+    selected_type = txc_type_combobox.get()
+    selected_model = txc_model_combobox.get()
+    for vehicle in vehicles[selected_type]:
+        if f"{vehicle.brand} {vehicle.model}" == selected_model:
+            show_vehicle_details(vehicle)
+            break
+
+
+
+
     
 
 
@@ -63,6 +112,7 @@ class Hatchback(Taxi):
 
 
 from tkinter import *
+from tkinter import ttk
 from tkinter.ttk import Combobox
 
 window = Tk()
@@ -120,8 +170,13 @@ def menu_panel():
 def taxi_call_panel():
     hide_all()
     taxi_call_frame.place(x=0, y=0, width=500, height=500)
-    taxi_call_main.place(x=180, y=100)
-    back_from_call_taxi_btn.place(x=200, y=450)
+    txc_main.place(x=210, y=50)
+    txc_type_combobox.place(x=125, y=150, width=150, height=30)
+    txc_model_combobox.place(x=125, y=200, width=150, height=30)
+    txc_details_label.place(x=125, y=300)
+    back_from_txc_btn.place(x=200, y=450)
+    
+    
 
 
 def progress_panel():
@@ -141,7 +196,7 @@ progress_frame = Frame(window)
 # Widget Definitions
 register_main = Label(register_frame, text="Register Panel")
 menu_main = Label(menu_frame, text="Menu Panel")
-taxi_call_main = Label(taxi_call_frame, text="Taxi Call Panel")
+
 progress_main = Label(progress_frame, text="In Progress Panel")
 
 # Login Panel Widgets
@@ -179,7 +234,21 @@ menu_progress_btn = Button(menu_frame, text="In Progress", command=progress_pane
 menu_logout_btn = Button(menu_frame, text="Log Out", command=login_panel)
 
 # Call Taxi Widgets
-back_from_call_taxi_btn = Button(taxi_call_frame, text="Back to Menu", command=menu_panel)
+txc_main = Label(taxi_call_frame, text="Taxi Call Panel")
+back_from_txc_btn = Button(taxi_call_frame, text="Back to Menu", command=menu_panel)
+txc_details_label = Label(taxi_call_frame, text="", anchor="nw", justify="left")
+
+
+# Araç türü seçimi combobox
+txc_type_combobox = ttk.Combobox(taxi_call_frame, values=list(vehicles.keys()), state="readonly")
+txc_type_combobox.bind("<<ComboboxSelected>>", update_model_combobox)
+
+# Araç modeli seçimi combobox
+txc_model_combobox = ttk.Combobox(taxi_call_frame, state="readonly")
+txc_model_combobox.bind("<<ComboboxSelected>>", on_model_select)
+
+
+
 
 # In Progress Panel
 back_from_progress_btn = Button(progress_frame, text="Back to Menu", command=menu_panel)
