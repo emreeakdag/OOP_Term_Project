@@ -109,11 +109,12 @@ def on_model_select(event):
 
 
 #-----------------------------------------
-
+# Gui 
 
 from tkinter import *
 from tkinter import ttk
 from tkinter.ttk import Combobox
+import sqlite3
 
 window = Tk()
 window.title("Taxi Booking")
@@ -193,11 +194,6 @@ menu_frame = Frame(window)
 taxi_call_frame = Frame(window)
 progress_frame = Frame(window)
 
-# Widget Definitions
-register_main = Label(register_frame, text="Register Panel")
-menu_main = Label(menu_frame, text="Menu Panel")
-
-progress_main = Label(progress_frame, text="In Progress Panel")
 
 # Login Panel Widgets
 lgn_main = Label(login_frame, text="Welcome to Taxi Booking")
@@ -209,8 +205,10 @@ lgn_pasword_ent = Entry(login_frame)
 lgn_exit_btn = Button(login_frame, text="Exit", command=window.destroy)
 lgn_signup_btn = Button(login_frame, text="Sign Up", command=register_panel, bg="gray")
 
+
 # Register Panel Widgets
 # rgs = register
+register_main = Label(register_frame, text="Register Panel")
 back_login_btn = Button(register_frame, text="Back Login", command=login_panel)
 rgs_name_lbl = Label(register_frame, text="Name")
 rgs_name_ent = Entry(register_frame)
@@ -229,9 +227,11 @@ rgs_signup_btn = Button(register_frame, text="Sign Up", command=login_panel)
 
 
 # Menu Panel Widgets
+menu_main = Label(menu_frame, text="Menu Panel")
 menu_call_taxi_btn = Button(menu_frame, text="Call a Taxi", command=taxi_call_panel)
 menu_progress_btn = Button(menu_frame, text="In Progress", command=progress_panel)
 menu_logout_btn = Button(menu_frame, text="Log Out", command=login_panel)
+
 
 # Call Taxi Widgets
 txc_main = Label(taxi_call_frame, text="Taxi Call Panel")
@@ -241,17 +241,86 @@ txc_details_label = Label(taxi_call_frame, text="", anchor="nw", justify="left")
 
 # Araç türü seçimi combobox
 txc_type_combobox = ttk.Combobox(taxi_call_frame, values=list(vehicles.keys()), state="readonly")
+
+# values=list(vehicles.keys()): Bu combobox’a, vehicles adlı sözlükteki tüm anahtarları (keys) liste olarak aktarır 
+# bu anahtarlar farklı araç türlerini temsil eder ve bu sayede combobox’ta bu araç türlerini görüntüleriz
+
+# state="readonly" kullanıcıya yalnızca önceden tanımlı seçenekleri sunar
+# kullanıcı başka bir değer yazamaz. Bu, seçimleri kısıtlayarak yanlış girişleri engeller
+
 txc_type_combobox.bind("<<ComboboxSelected>>", update_model_combobox)
+# bind kullanıcının combobox'tan bir öğe seçmesi durumunda, belirtilen işlevin çalıştırılmasını sağlar
+# "<<ComboboxSelected>>" bu olay, combobox'ta bir seçim yapıldığında gerçekleşir
+# update_model_combobox bir seçim yapıldığında çalışacak fonksiyon seçilen araç türüne göre araç modellerini günceller
+
 
 # Araç modeli seçimi combobox
 txc_model_combobox = ttk.Combobox(taxi_call_frame, state="readonly")
 txc_model_combobox.bind("<<ComboboxSelected>>", on_model_select)
+# bu, model combobox'tan bir seçim yapıldığında on_model_select işlevini çağırır
+# bu işlev, model seçildiğinde gerçekleştirilmesi gereken işlemleri 
+# (örneğin, arayüzde başka bir bileşeni güncellemek veya veritabanına kayıt eklemek gibi) içerir
 
 
 
 
 # In Progress Panel
+progress_main = Label(progress_frame, text="In Progress Panel")
 back_from_progress_btn = Button(progress_frame, text="Back to Menu", command=menu_panel)
+
+
+
+
+#--------------------------------------------
+# Database
+# 'conn' , 'users.db' adlı sqlite veritabanına bağlanan bir bağlantı nesnesidir
+# eğer 'users.db' yoksa bu komut otomatik olarak oluşturulur.
+
+conn = sqlite3.connect('users.db')
+# bu bize veritabanı bağlantımızı oluşturdu
+
+# imleç(cursor) oluşturalım, veritabanı üzerinde SQL komutları çalıştırmamızı sağlar
+cursor = conn.cursor()
+
+# kullanıcılar için tablo oluşturalım, yazacağım komut users adında bir tablo oluşturacak
+# 'IF NOT EXISTS' ifadesi eğer 'users' tablosu önceden oluşturulmuş ise tekrardan oluşturulmamasını sağlar.
+
+cursor.execute('''
+
+CREATE TABLE IF NOT EXISTS users ( 
+    name TEXT NOT NULL,
+    surname TEXT NOT NULL,
+    username NOT NULL UNIQUE,
+    pasword TEXT NOT NULL,
+    email NOT NULL UNIQUE,
+    gender TEXT
+);
+
+''')
+
+conn.commit()
+
+def save_user(username, password, email):
+    cursor.execute("INSERT INTO users (name, surname, username, password, email, gender) VALUES (?, ?, ?, ?, ?, ?)",
+                   (username, password, email))  # '?' işaretleri parametre yer tutucularıdır ve sağlanan verilerle doldurulur.
+    conn.commit()
+
+
+conn.close()
+
+def display_users():
+    cursor.execute("SELECT * FROM users")  # Tüm kullanıcıları seç
+    users = cursor.fetchall()  # Kullanıcıları al
+    for user in users:
+        print(user)
+
+
+
+
+
+
+
+
 
 # Initial Panel Display
 login_panel()
