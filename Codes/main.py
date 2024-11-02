@@ -152,6 +152,7 @@ def show_vehicle_details(vehicle):
         f"{vehicle.acceleration_time()}"
     )
     txc_details_label.config(text=details)
+    return details
 
 
 # İkinci combobox'u güncelleyen fonksiyon
@@ -169,6 +170,23 @@ def on_model_select(event):
             show_vehicle_details(vehicle)
             break
 
+# Progress Panel için global değişken
+current_taxi_info = ""
+
+def call_taxi():
+    global current_taxi_info  # Global değişkeni kullan
+    selected_type = txc_type_combobox.get()
+    selected_model = txc_model_combobox.get()
+
+    if selected_type and selected_model:
+        # Seçilen aracı bul
+        for vehicle in vehicles[selected_type]:
+            if f"{vehicle.brand} {vehicle.model}" == selected_model:
+                current_taxi_info = show_vehicle_details(vehicle)  # Araç bilgilerini güncelle
+                progress_panel()  # In Progress paneline geç
+                break
+    else:
+        print("Lütfen bir araç türü ve modeli seçin.")
 
 
 
@@ -239,9 +257,12 @@ def taxi_call_panel():
     hide_all()
     taxi_call_frame.place(x=0, y=0, width=500, height=500)
     txc_main.place(x=210, y=50)
-    txc_type_combobox.place(x=125, y=150, width=150, height=30)
-    txc_model_combobox.place(x=125, y=200, width=150, height=30)
-    txc_details_label.place(x=125, y=300)
+    txc_type_lbl.place(x=100, y=150)
+    txc_type_combobox.place(x=170, y=150, width=150, height=30)
+    txc_model_lbl.place(x=100, y=200)
+    txc_model_combobox.place(x=170, y=200, width=150, height=30)
+    txc_details_label.place(x=170, y=250)
+    txc_call_taxi_btn.place(x=200, y=380)
     back_from_txc_btn.place(x=200, y=450)
     
     
@@ -251,6 +272,8 @@ def progress_panel():
     hide_all()
     progress_frame.place(x=0, y=0, width=500, height=500)
     progress_main.place(x=180, y=100)
+    progress_current_taxi_label.config(text=current_taxi_info)
+    progress_current_taxi_label.place(x=50, y=150)
     back_from_progress_btn.place(x=200, y=450)
 
 
@@ -331,7 +354,11 @@ menu_logout_btn = Button(menu_frame, text="Log Out", command=login_panel)
 
 # Call Taxi Widgets
 txc_main = Label(taxi_call_frame, text="Taxi Call Panel")
+txc_type_lbl = Label(taxi_call_frame, text="Car Type")
+txc_model_lbl = Label(taxi_call_frame, text="Car Model")
 back_from_txc_btn = Button(taxi_call_frame, text="Back to Menu", command=menu_panel)
+txc_call_taxi_btn = Button(taxi_call_frame, text="Call", command=call_taxi)
+
 txc_details_label = Label(taxi_call_frame, text="", anchor="nw", justify="left")
 
 
@@ -347,6 +374,7 @@ txc_model_combobox.bind("<<ComboboxSelected>>", on_model_select)
 
 
 # In Progress Panel
+progress_current_taxi_label = Label(progress_frame, text="", anchor="nw", justify="left")
 back_from_progress_btn = Button(progress_frame, text="Back to Menu", command=menu_panel)
 
 # Initial Panel Display
@@ -363,4 +391,8 @@ back_from_progress_btn = Button(progress_frame, text="Back to Menu", command=men
 
 login_panel()
 
+
+
 window.mainloop()
+
+
