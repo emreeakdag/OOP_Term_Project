@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from tkinter.ttk import Combobox
 import sqlite3
-
+from abc import ABC, abstractmethod
 
 class User:
     def __init__(self, username, password):
@@ -41,12 +41,16 @@ class Welcome:
         return f"Welcome to Taxi Booking, {name}!"
 
 
-class Taxi:
+class Taxi(ABC):  # Soyut sınıf
     def __init__(self, brand, model, plate, capacity):
         self.brand = brand
         self.model = model
         self.plate = plate
         self.capacity = capacity
+
+    @abstractmethod
+    def acceleration_time(self):
+        pass
 
 
 class Sedan(Taxi):
@@ -73,7 +77,7 @@ class Hatchback(Taxi):
         return "0-100 km/h: 7 seconds"
 
 
-# Database Setup
+# Veritabanı kurulumu
 conn = sqlite3.connect("taxi_booking.db")
 cursor = conn.cursor()
 
@@ -113,7 +117,7 @@ vehicles = {
     ]
 }
 
-# Functions
+# Fonksiyonlar
 
 def register_user():
     name = rgs_name_ent.get()
@@ -176,9 +180,9 @@ def call_taxi():
     if selected_type and selected_model:
         for vehicle in vehicles[selected_type]:
             if f"{vehicle.brand} {vehicle.model}" == selected_model:
-                details = show_vehicle_details(vehicle)  # Get the details of the selected vehicle
-                progress_current_taxi_label.config(text=details)  # Update progress panel with vehicle details
-                progress_panel()  # Navigate to the In Progress panel
+                details = show_vehicle_details(vehicle)  # Seçilen aracın özellikleri gösterilir
+                progress_current_taxi_label.config(text=details)  # In Progress panelinde güncelleme yapar
+                progress_panel()  # In Progress paneline yönlendir
                 break
     else:
         print("Lütfen bir araç türü ve modeli seçin.")
