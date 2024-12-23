@@ -4,26 +4,25 @@ from tkinter.ttk import Combobox
 import sqlite3
 
 
-
-class user:
-    def __init__(self,username,password):
+class User:
+    def __init__(self, username, password):
         self.__username = username
         self.__password = password
 
     def get_username(self):
         return self.__username
-    
+
     def set_username(self, new_username):
         self.__username = new_username
 
     def get_password(self):
         return self.__password
-    
+
     def set_password(self, new_password):
         self.__password = new_password
 
 
-class customer(user):
+class Customer(User):
     def __init__(self, name, surname, email, gender, username, password):
         super().__init__(username, password)
         self.name = name
@@ -31,10 +30,49 @@ class customer(user):
         self.email = email
         self.gender = gender
 
+
+class Welcome:
+    @staticmethod
+    def get_welcome_message():
+        return "Welcome to Taxi Booking"
+
+
+class Taxi:
+    def __init__(self, brand, model, plate, capacity):
+        self.brand = brand
+        self.model = model
+        self.plate = plate
+        self.capacity = capacity
+
+
+class Sedan(Taxi):
+    def __init__(self, brand, model, plate, capacity):
+        super().__init__(brand, model, plate, capacity)
+
+    def acceleration_time(self):
+        return "0-100 km/h: 8 seconds"
+
+
+class SUV(Taxi):
+    def __init__(self, brand, model, plate, capacity):
+        super().__init__(brand, model, plate, capacity)
+
+    def acceleration_time(self):
+        return "0-100 km/h: 9 seconds"
+
+
+class Hatchback(Taxi):
+    def __init__(self, brand, model, plate, capacity):
+        super().__init__(brand, model, plate, capacity)
+
+    def acceleration_time(self):
+        return "0-100 km/h: 7 seconds"
+
+
+# Database Setup
 conn = sqlite3.connect("taxi_booking.db")
 cursor = conn.cursor()
 
-# Tabloları Oluşturma
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,78 +93,8 @@ CREATE TABLE IF NOT EXISTS customers (
 """)
 conn.commit()
 
-# Kullanıcı kaydetme fonksiyonu
-def register_user():
-    # Entry alanlarındaki bilgileri al
-    name = rgs_name_ent.get()
-    surname = rgs_surname_ent.get()
-    email = rgs_email_ent.get()
-    gender = rgs_genders_cmbx.get()
-    username = rgs_username_ent.get()
-    password = rgs_password_ent.get()
-
-    try:
-        # users tablosuna kullanıcı ekle
-        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
-        conn.commit()
-        
-        # customers tablosuna müşteri bilgisi ekle
-        cursor.execute("INSERT INTO customers (name, surname, email, gender, username) VALUES (?, ?, ?, ?, ?)",
-                       (name, surname, email, gender, username))
-        conn.commit()
-        
-        # Kayıt başarılı mesajı göster
-        print("Kayıt başarılı!")
-        
-        # Entry alanlarını temizle
-        rgs_name_ent.delete(0, END)
-        rgs_surname_ent.delete(0, END)
-        rgs_username_ent.delete(0, END)
-        rgs_password_ent.delete(0, END)
-        rgs_email_ent.delete(0, END)
-        rgs_genders_cmbx.set("")
-        
-    except sqlite3.IntegrityError:
-        print("Bu kullanıcı adı zaten kullanılıyor. Başka bir kullanıcı adı deneyin.")
-
-
-
-
-
-class Taxi:
-    def __init__(self, brand, model,plate,capacity):
-        self.brand = brand
-        self.model = model
-        self.plate = plate
-        self.capacity = capacity
-
-
-class Sedan(Taxi):
-    def __init__(self, brand, model, plate, capacity):
-        super().__init__(brand, model, plate, capacity)
-
-    def acceleration_time(self):
-        return "0-100 km/h: 8 seconds"
-    
-
-class SUV(Taxi):
-    def __init__(self, brand,model, plate, capacity):
-        super().__init__(brand, model, plate, capacity)
-
-    def acceleration_time(self):
-        return "0-100 km/h: 9 seconds"
-    
-
-class Hatchback(Taxi):
-    def __init__(self, brand, model, plate, capacity):
-        super().__init__(brand, model, plate, capacity)
-    
-    def acceleration_time(self):
-        return "0-100 km/h: 7 seconds"
-    
 # Vehicles
-
-vehicles =  {
+vehicles = {
     "Sedan": [
         Sedan("Toyota", "Camry", "01EM396", 5),
         Sedan("Honda", "Accord", "34ABC123", 5)
@@ -141,7 +109,34 @@ vehicles =  {
     ]
 }
 
-# bu araçları ekrana gösterecek def i yazalım
+# Functions
+
+def register_user():
+    name = rgs_name_ent.get()
+    surname = rgs_surname_ent.get()
+    email = rgs_email_ent.get()
+    gender = rgs_genders_cmbx.get()
+    username = rgs_username_ent.get()
+    password = rgs_password_ent.get()
+
+    try:
+        cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+        conn.commit()
+        cursor.execute("INSERT INTO customers (name, surname, email, gender, username) VALUES (?, ?, ?, ?, ?)",
+                       (name, surname, email, gender, username))
+        conn.commit()
+
+        print("Kayıt başarılı!")
+        rgs_name_ent.delete(0, END)
+        rgs_surname_ent.delete(0, END)
+        rgs_username_ent.delete(0, END)
+        rgs_password_ent.delete(0, END)
+        rgs_email_ent.delete(0, END)
+        rgs_genders_cmbx.set("")
+
+    except sqlite3.IntegrityError:
+        print("Bu kullanıcı adı zaten kullanılıyor. Başka bir kullanıcı adı deneyin.")
+
 
 def show_vehicle_details(vehicle):
     details = (
@@ -155,13 +150,12 @@ def show_vehicle_details(vehicle):
     return details
 
 
-# İkinci combobox'u güncelleyen fonksiyon
 def update_model_combobox(event):
     selected_type = txc_type_combobox.get()
     txc_model_combobox['values'] = [f"{v.brand} {v.model}" for v in vehicles[selected_type]]
-    txc_model_combobox.set("")  # İkinci combobox'u temizle
+    txc_model_combobox.set("")
 
-# Seçilen aracı bul ve göster
+
 def on_model_select(event):
     selected_type = txc_type_combobox.get()
     selected_model = txc_model_combobox.get()
@@ -170,49 +164,48 @@ def on_model_select(event):
             show_vehicle_details(vehicle)
             break
 
-# Progress Panel için global değişken
-current_taxi_info = ""
 
 def call_taxi():
-    global current_taxi_info  # Global değişkeni kullan
     selected_type = txc_type_combobox.get()
     selected_model = txc_model_combobox.get()
 
     if selected_type and selected_model:
-        # Seçilen aracı bul
         for vehicle in vehicles[selected_type]:
             if f"{vehicle.brand} {vehicle.model}" == selected_model:
-                current_taxi_info = show_vehicle_details(vehicle)  # Araç bilgilerini güncelle
-                progress_panel()  # In Progress paneline geç
+                show_vehicle_details(vehicle)
+                progress_panel()
                 break
     else:
         print("Lütfen bir araç türü ve modeli seçin.")
 
 
+def login_user():
+    username = lgn_name_ent.get()
+    password = lgn_password_ent.get()
 
-    
+    if not username or not password:
+        print("Kullanıcı adı ve şifre boş olamaz.")
+        return
 
+    cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+    user = cursor.fetchone()
 
-
-#-----------------------------------------
-
-
-
-
-window = Tk()
-window.title("Taxi Booking")
-window.geometry("500x500")
+    if user:
+        print("Giriş başarılı!")
+        menu_panel()
+    else:
+        print("Kullanıcı adı veya şifre yanlış.")
 
 
 def login_panel():
     hide_all()
     login_frame.place(x=0, y=0, width=500, height=500)
+    lgn_main.config(text=Welcome.get_welcome_message())  # Static method çağrısı
     lgn_main.place(x=180, y=50)
     lgn_name_lbl.place(x=50, y=150)
     lgn_name_ent.place(x=120, y=150)
     lgn_password_lbl.place(x=50, y=180)
     lgn_password_ent.place(x=120, y=180)
-
     login_button.place(x=300, y=350, width=100, height=50)
     lgn_signup_btn.place(x=100, y=350, width=100, height=50)
     lgn_exit_btn.place(x=225, y=425, width=50, height=50)
@@ -227,7 +220,7 @@ def register_panel():
     hide_all()
     register_frame.place(x=0, y=0, width=500, height=500)
     register_main.place(x=200, y=50)
-    rgs_name_lbl.place(x=125,y=150)
+    rgs_name_lbl.place(x=125, y=150)
     rgs_name_ent.place(x=195, y=150)
     rgs_surname_lbl.place(x=125, y=180)
     rgs_surname_ent.place(x=195, y=180)
@@ -239,7 +232,6 @@ def register_panel():
     rgs_email_ent.place(x=195, y=270)
     rgs_genders_lbl.place(x=125, y=300)
     rgs_genders_cmbx.place(x=195, y=300)
-
     back_login_btn.place(x=100, y=350, width=100, height=50)
     rgs_signup_btn.place(x=300, y=350, width=100, height=50)
 
@@ -264,18 +256,19 @@ def taxi_call_panel():
     txc_details_label.place(x=170, y=250)
     txc_call_taxi_btn.place(x=200, y=380)
     back_from_txc_btn.place(x=200, y=450)
-    
-    
 
 
 def progress_panel():
     hide_all()
     progress_frame.place(x=0, y=0, width=500, height=500)
     progress_main.place(x=180, y=100)
-    progress_current_taxi_label.config(text=current_taxi_info)
     progress_current_taxi_label.place(x=50, y=150)
     back_from_progress_btn.place(x=200, y=450)
 
+# UI Setup
+window = Tk()
+window.title("Taxi Booking")
+window.geometry("500x500")
 
 # Frame Definitions
 login_frame = Frame(window)
@@ -285,47 +278,19 @@ taxi_call_frame = Frame(window)
 progress_frame = Frame(window)
 
 # Widget Definitions
-register_main = Label(register_frame, text="Register Panel")
-menu_main = Label(menu_frame, text="Menu Panel")
-
-progress_main = Label(progress_frame, text="In Progress Panel")
-
-# Login Panel Widgets
-lgn_main = Label(login_frame, text="Welcome to Taxi Booking")
-login_button = Button(login_frame, text="Login", command=menu_panel)
+lgn_main = Label(login_frame, text="")
+login_button = Button(login_frame, text="Login", command=login_user)
 lgn_name_lbl = Label(login_frame, text="Username")
 lgn_name_ent = Entry(login_frame)
 lgn_password_lbl = Label(login_frame, text="Password")
-lgn_password_ent = Entry(login_frame)
+lgn_password_ent = Entry(login_frame, show="*")
 lgn_exit_btn = Button(login_frame, text="Exit", command=window.destroy)
 lgn_signup_btn = Button(login_frame, text="Sign Up", command=register_panel, bg="gray")
 
-# Giriş Fonksiyonu
-def login_user():
-    username = lgn_name_ent.get()
-    password = lgn_password_ent.get()
+register_main = Label(register_frame, text="Register Panel")
+menu_main = Label(menu_frame, text="Menu Panel")
+progress_main = Label(progress_frame, text="In Progress Panel")
 
-    # Alanların boş olup olmadığını kontrol et
-    if not username or not password:
-        print("Kullanıcı adı ve şifre boş olamaz.")
-        return
-
-    # Veritabanında kullanıcı bilgilerini kontrol et
-    cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
-    user = cursor.fetchone()
-
-    if user:
-        print("Giriş başarılı!")
-        menu_panel()  # Doğruysa menü paneline geç
-    else:
-        print("Kullanıcı adı veya şifre yanlış.")  # Yanlışsa hata mesajı göster
-
-# Login Panelindeki 'Login' Butonunu Güncelle
-login_button.config(command=login_user)
-
-
-# Register Panel Widgets
-# rgs = register
 back_login_btn = Button(register_frame, text="Back Login", command=login_panel)
 rgs_name_lbl = Label(register_frame, text="Name")
 rgs_name_ent = Entry(register_frame)
@@ -337,62 +302,29 @@ rgs_password_lbl = Label(register_frame, text="Password")
 rgs_password_ent = Entry(register_frame)
 rgs_email_lbl = Label(register_frame, text="E-mail")
 rgs_email_ent = Entry(register_frame)
-
 rgs_genders_lbl = Label(register_frame, text="Gender")
 genders = ["Man", "Woman"]
-rgs_genders_cmbx= Combobox(register_frame, values=genders)
+rgs_genders_cmbx = Combobox(register_frame, values=genders)
+rgs_signup_btn = Button(register_frame, text="Sign Up", command=register_user)
 
-rgs_signup_btn = Button(register_frame, text="Sign Up")
-rgs_signup_btn.config(command=register_user)
-
-
-
-# Menu Panel Widgets
 menu_call_taxi_btn = Button(menu_frame, text="Call a Taxi", command=taxi_call_panel)
 menu_progress_btn = Button(menu_frame, text="In Progress", command=progress_panel)
 menu_logout_btn = Button(menu_frame, text="Log Out", command=login_panel)
 
-# Call Taxi Widgets
 txc_main = Label(taxi_call_frame, text="Taxi Call Panel")
 txc_type_lbl = Label(taxi_call_frame, text="Car Type")
 txc_model_lbl = Label(taxi_call_frame, text="Car Model")
-back_from_txc_btn = Button(taxi_call_frame, text="Back to Menu", command=menu_panel)
-txc_call_taxi_btn = Button(taxi_call_frame, text="Call", command=call_taxi)
-
-txc_details_label = Label(taxi_call_frame, text="", anchor="nw", justify="left")
-
-
-# Araç türü seçimi combobox
 txc_type_combobox = ttk.Combobox(taxi_call_frame, values=list(vehicles.keys()), state="readonly")
 txc_type_combobox.bind("<<ComboboxSelected>>", update_model_combobox)
-
-# Araç modeli seçimi combobox
 txc_model_combobox = ttk.Combobox(taxi_call_frame, state="readonly")
 txc_model_combobox.bind("<<ComboboxSelected>>", on_model_select)
+txc_details_label = Label(taxi_call_frame, text="", anchor="nw", justify="left")
+txc_call_taxi_btn = Button(taxi_call_frame, text="Call", command=call_taxi)
+back_from_txc_btn = Button(taxi_call_frame, text="Back to Menu", command=menu_panel)
 
-
-
-
-# In Progress Panel
 progress_current_taxi_label = Label(progress_frame, text="", anchor="nw", justify="left")
 back_from_progress_btn = Button(progress_frame, text="Back to Menu", command=menu_panel)
 
-# Initial Panel Display
-
-#------------------------------
-
-
-
-
-
-
-
-
-
+# Initial Panel
 login_panel()
-
-
-
 window.mainloop()
-
-
