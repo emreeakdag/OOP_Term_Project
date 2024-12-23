@@ -36,6 +36,10 @@ class Welcome:
     def get_welcome_message():
         return "Welcome to Taxi Booking"
 
+    @staticmethod
+    def get_welcome_message(name):  # Overload metot örneği
+        return f"Welcome to Taxi Booking, {name}!"
+
 
 class Taxi:
     def __init__(self, brand, model, plate, capacity):
@@ -172,13 +176,14 @@ def call_taxi():
     if selected_type and selected_model:
         for vehicle in vehicles[selected_type]:
             if f"{vehicle.brand} {vehicle.model}" == selected_model:
-                show_vehicle_details(vehicle)
-                progress_panel()
+                details = show_vehicle_details(vehicle)  # Get the details of the selected vehicle
+                progress_current_taxi_label.config(text=details)  # Update progress panel with vehicle details
+                progress_panel()  # Navigate to the In Progress panel
                 break
     else:
         print("Lütfen bir araç türü ve modeli seçin.")
 
-
+        
 def login_user():
     username = lgn_name_ent.get()
     password = lgn_password_ent.get()
@@ -200,7 +205,7 @@ def login_user():
 def login_panel():
     hide_all()
     login_frame.place(x=0, y=0, width=500, height=500)
-    lgn_main.config(text=Welcome.get_welcome_message())  # Static method çağrısı
+    lgn_main.config(text=Welcome.get_welcome_message("User"))  # Overloaded method çağrısı
     lgn_main.place(x=180, y=50)
     lgn_name_lbl.place(x=50, y=150)
     lgn_name_ent.place(x=120, y=150)
